@@ -1,0 +1,16 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: delay
+spec:
+  action: delay
+  mode: one
+  selector:
+    namespaces:
+      - microservices-demo
+    labelSelectors:
+      'app': 'frontend'
+  delay:
+    latency: '250ms'
+    correlation: '0'
+    jitter: '0ms'

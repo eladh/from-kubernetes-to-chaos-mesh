@@ -1,0 +1,14 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: redis-cache-failure
+  namespace: chaos-mesh
+spec:
+  action: pod-failure
+  mode: one # Kills one pod matching the selector
+  selector:
+    namespaces:
+      - default
+    labelSelectors:
+      app: redis-cart
+  duration: "360s" # The chaos experiment object itself will last for 2 minutes

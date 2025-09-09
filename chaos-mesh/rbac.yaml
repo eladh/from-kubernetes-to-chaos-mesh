@@ -1,0 +1,99 @@
+# ---------- ServiceAccount for Chaos Mesh Dashboard login ----------
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: chaos-dashboard-user
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: chaos-dashboard-user-role
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["pods","namespaces","events","configmaps"]
+    verbs: ["get","list","watch","create","update","patch","delete"]
+  - apiGroups: ["chaos-mesh.org"]
+    resources: ["*"]
+    verbs: ["get","list","watch","create","update","patch","delete","deletecollection"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: chaos-dashboard-user-rb
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: chaos-dashboard-user
+    namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: chaos-dashboard-user-role
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: chaos-mesh-ns-writer-for-iam
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["pods","namespaces","events","configmaps"]
+    verbs: ["get","list","watch","create","update","patch","delete"]
+  - apiGroups: ["chaos-mesh.org"]
+    resources: ["*"]
+    verbs: ["get","list","watch","create","update","patch","delete","deletecollection"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: chaos-mesh-ns-writer-binding-for-iam
+  namespace: default
+subjects:
+  - kind: User
+    name: "arn:aws:iam::992382406698:user/demo"
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: chaos-mesh-ns-writer-for-iam
+
+# ---------- Shared cluster-scope rights for Chaos Mesh CRDs ----------
+# One ClusterRole, two bindings (IAM + SA)
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: chaos-mesh-cr-access
+rules:
+  - apiGroups: ["chaos-mesh.org"]
+    resources: ["*"]
+    verbs: ["get","list","watch","create","update","patch","delete","deletecollection"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: chaos-mesh-cr-access-binding-for-iam
+subjects:
+  - kind: User
+    name: "arn:aws:iam::992382406698:user/demo"
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: chaos-mesh-cr-access
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: chaos-mesh-cr-access-binding-for-sa
+subjects:
+  - kind: ServiceAccount
+    name: chaos-dashboard-user
+    namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: chaos-mesh-cr-access
+# ---------------------------------------------------------------

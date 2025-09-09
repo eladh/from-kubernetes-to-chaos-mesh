@@ -1,0 +1,20 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: delay
+  annotations:
+    chaos-mesh.org/container-runtime: containerd
+    chaos-mesh.org/socket-path: /run/containerd/containerd.sock
+    chaos-mesh.org/ignore-chain-error: "true"
+spec:
+  action: delay
+  mode: one
+  selector:
+    namespaces:
+      - microservices-demo
+    labelSelectors:
+      'app': 'productcatalogservice'
+  delay:
+    latency: '250ms'
+    correlation: '0'
+    jitter: '0ms'
